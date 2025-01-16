@@ -1,0 +1,33 @@
+language: android
+dist: focal
+jdk: openjdk11
+
+android:
+  components:
+    - tools
+    - platform-tools
+    - build-tools-33.0.2
+    - android-33
+
+env:
+  global:
+    - JOBS=$(nproc)
+
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install -y repo git-core ccache
+
+script:
+  - git clone https://github.com/akhilnarang/scripts
+  - cd scripts
+  - ./setup/android_build_env.sh
+  - cd ~/
+  - repo init -u https://github.com/LineageOS/android.git -b lineage-22.1 --git-lfs
+  - git clone --branch a15/master --depth 1 https://github.com/Mi-Thorium/android_device_xiaomi_Mi8937.git device/xiaomi/Mi8937
+  - git clone --branch a14/master --depth 1 https://github.com/Mi-Thorium/proprietary_vendor_xiaomi_Mi8937.git vendor/xiaomi/Mi8937
+  - git clone --branch mithorium/a13/master --depth 1 https://github.com/Mi-Thorium/kernel_msm-4.19.git kernel/xiaomi/Mi8937
+  - repo sync -j$JOBS --force-sync
+  - source build/envsetup.sh
+  - lunch lineage_Mi8937-userdebug
+  - mka bacon
+
